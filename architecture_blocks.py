@@ -2,12 +2,10 @@
 import torch
 from torch import Tensor
 import torch.nn as nn
-# import math
 
-# Import necessary config
-# from config import factorX
 
-_all_blocks = ["_GeneratorResidualBlock", "_GeneratorUpsampleBlock"]
+
+_all_blocks = ["_GeneratorResidualBlock", "_GeneratorUpsampleBlock", "_DiscriminatorBlock"]
 
 class _GeneratorResidualBlock(nn.Module):
     def __init__(self, channels=64) -> None:
@@ -44,15 +42,36 @@ class _GeneratorUpsampleBlock(nn.Module):
         return out
 
 
+class _DiscriminatorBlock(nn.Module):
+    def __init__(self, input_channels = 64 , output_channels = 128, stride = 1) -> None:
+        super(_DiscriminatorBlock, self).__init__()
+        self.conv = nn.Conv2d(in_channels = input_channels, out_channels = output_channels, kernel_size = 3, stride = stride, padding=1)
+        self.bn = nn.BatchNorm2d(output_channels)
+        self.lrelu = nn.LeakyReLU(0.2)
+
+    def forward(self, x: Tensor) -> Tensor:
+        out = self.conv(x)
+        out = self.bn(out)
+        out = self.lrelu(out)
+
+        return out
+
+
+
 if __name__ == "__main__":
+    # Cross-check if blocks are built correctly
     input1 = torch.rand((10, 64, 32, 32))
     input2 = torch.rand((10, 64, 32, 32))
+    input3 = torch.rand((10, 64, 32, 32))
 
     model1 = _GeneratorResidualBlock()
     model2 = _GeneratorUpsampleBlock()
+    model3 = _DiscriminatorBlock()
 
     out1 = model1(input1)
     out2 = model2(input2)
+    out3 = model3(input3)
 
     print(out1.shape)
     print(out2.shape)
+    print(out3.shape)
